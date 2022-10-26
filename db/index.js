@@ -12,7 +12,7 @@ async function getAllUsers(){
 }
 
 async function createUser({username, password}){
-    // try {
+    try {
         const {rows} = await client.query(`
         INSERT INTO users(username, password)
         VALUES ($1, $2)
@@ -21,10 +21,11 @@ async function createUser({username, password}){
         `, [username, password]
         );
         return rows;
-      }
-    // } catch (error){
-    //     throw error;
-    //
+
+    } catch (error){
+        throw error;
+    }
+}
 
 
 
@@ -32,5 +33,5 @@ async function createUser({username, password}){
 module.exports = {
     client,
     getAllUsers,
-    createUser
+    createUser,
   }
