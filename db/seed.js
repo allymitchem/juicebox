@@ -1,4 +1,4 @@
-const { client, getAllUsers, createUser } = require('./index');
+const { client, getAllUsers, createUser, updateUser } = require('./index');
 
 async function dropTables() {
     try {
@@ -18,8 +18,11 @@ async function createTables() {
         await client.query(`
         CREATE TABLE users (
             id SERIAL PRIMARY KEY,
-            username varchar(255) UNIQUE NOT NULL,
-            password varchar(255) NOT NULL
+            username VARCHAR(255) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            location VARCHAR(255) NOT NULL,
+            active BOOLEAN DEFAULT true
             );
          `);
          console.log("Finished building tables!");
@@ -45,11 +48,11 @@ async function rebuildDB() {
 async function createInitialUsers(){
     try{
         console.log("Starting to create users...");
-        const albert = await createUser({username: 'albert', password: 'bertie99'});
+        const albert = await createUser({username: 'albert', password: 'bertie99', name:'Al Bert', location:'Agrabah'});
         console.log(albert);
-        const sandra = await createUser({username:'sandra', password:'2sandy4me'});
+        const sandra = await createUser({username:'sandra', password:'2sandy4me', name:'Sandy', location:'Los Angeles'});
         console.log(sandra);
-        const glamgal = await createUser({username:'glamgal', password:'soglam'});
+        const glamgal = await createUser({username:'glamgal', password:'soglam', name:'Joshua', location:'Upper East Side'});
         console.log(glamgal);
         console.log("Finished creating users!");
     } catch (error){
