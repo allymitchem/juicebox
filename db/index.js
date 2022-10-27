@@ -15,6 +15,8 @@ async function getAllUsers() {
   }
 }
 
+
+
 async function createUser({ username, password, name, location }) {
   try {
     const {
@@ -78,23 +80,47 @@ async function createPost({ authorId, title, content }) {
   }
 }
 
-async function createTags(name) {
+async function createTags(tagList) {
+  if (tagList.length ===0){
+return;
+  }
+  const insertValues = tagList.map((_, index)=>`$${index+1}`).join('),(');
+  const selectValues = tagList.map((_, index)=>`$${index+1}`).join('),(');
   try {
-    const {rows: [tag]} = await client.query(
+    await client.query(
       `
               INSERT INTO tags(name)
-              VALUES ($1), ($2), ($3))
+              VALUES ${insertValues}
               ON CONFLICT (name) DO NOTHING;
 
-              RETURNING *;
               `,
-      [name]
+      tagList
     );
-    return tag;
+    const { rows } = await client.query(
+      `SELECT * FROM tags
+    WHERE name
+    IN ${selectValues};
+
+    `, tagList )
+    return rows
   } catch (error) {
     throw error;
   }
 }
+
+// async function getAllTags() {
+//   try {
+//     const { rows } = await client.query(
+//       `SELECT * FROM tags
+//     WHERE name
+//     IN ($1, $2, $3);
+//     `
+//     );
+//     return rows;
+//   } catch (error) {
+//     throw error;
+//   }
+// }
 
 async function updatePost(id, fields={}) {
   const setString = Object.keys(fields)
@@ -173,4 +199,5 @@ module.exports = {
   getAllPosts,
   getPostsByUser,
   getUserById,
+  createTags,
 };
