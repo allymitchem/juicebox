@@ -1,18 +1,32 @@
-const { client, getAllUsers, createUser, updateUser, createPost, updatePost, getAllPosts, getPostsByUser, getUserById } = require("./index");
+const {
+  client,
+  getAllUsers,
+  createUser,
+  updateUser,
+  createPost,
+  updatePost,
+  getAllPosts,
+  getPostsByUser,
+  getUserById,
+} = require("./index");
 
 async function dropTables() {
   try {
     console.log("Starting to drop tables...");
     await client.query(`
+    DROP TABLE IF EXISTS post_tags;
+    DROP TABLE IF EXISTS tags;
     DROP TABLE IF EXISTS posts;
-        DROP TABLE IF EXISTS users;
-         `);
+    DROP TABLE IF EXISTS users;
+    `);
+
     console.log("Finished dropping tables!");
   } catch (error) {
     console.error("Error dropping tables!");
     throw error;
   }
 }
+
 async function createTables() {
   try {
     console.log("Starting to build tables...");
@@ -33,6 +47,16 @@ async function createTables() {
                 content TEXT NOT NULL,
                 active BOOLEAN DEFAULT true
             );
+
+            CREATE TABLE tags(
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) UNIQUE NOT NULL
+            );
+
+            CREATE TABLE post_tags(
+                "postId" INTEGER REFERENCES posts(id) UNIQUE NOT NULL,
+                "tagId" INTEGER REFERENCES tags(id) UNIQUE NOT NULL
+                );
          `);
     console.log("Finished building tables!");
   } catch (error) {
@@ -46,9 +70,10 @@ async function rebuildDB() {
     client.connect();
     await dropTables();
     await createTables();
-    await createInitialUsers()
+    await createInitialUsers();
     await createInitialPosts();
   } catch (error) {
+    console.log("Error during rebuildDB");
     throw error;
   }
 }
@@ -56,27 +81,27 @@ async function rebuildDB() {
 async function createInitialUsers() {
   try {
     console.log("Starting to create users...");
-    const albert = await createUser({
+    await createUser({
       username: "albert",
       password: "bertie99",
       name: "Al Bert",
       location: "Agrabah",
     });
-    console.log(albert);
-    const sandra = await createUser({
+
+    await createUser({
       username: "sandra",
       password: "2sandy4me",
       name: "Sandy",
       location: "Los Angeles",
     });
-    console.log(sandra);
-    const glamgal = await createUser({
+
+    await createUser({
       username: "glamgal",
       password: "soglam",
       name: "Joshua",
       location: "Upper East Side",
     });
-    console.log(glamgal);
+
     console.log("Finished creating users!");
   } catch (error) {
     console.error("Error creating users!");
@@ -84,30 +109,32 @@ async function createInitialUsers() {
   }
 }
 
-
-async function createInitialPosts(){
-    try {
-        const [albert, sandra, glamgal] = await getAllUsers();
-
-        await createPost({
-            authorId: albert.id,
-            title: "First Post",
-            content: "This is my first post. I hope I love writing blogs as much as I love writing them."
-        });
-        await createPost({
-            authorId: sandra.id,
-            title: "Summer Nights",
-            content: "Does anyone else enjoy ripping paper out of a binder and throwing into the lake on these warm summer nights as much as I do?"
-        });
-        await createPost({
-            authorId: glamgal.id,
-            title: "The Only Post That Matters",
-            content: "Remember, every morning you wake up, you have to choose to be fabulous."
-        });
-    
-}catch(error){
+async function createInitialPosts() {
+  try {
+    const [albert, sandra, glamgal] = await getAllUsers();
+    console.log("Starting to create posts...");
+    await createPost({
+      authorId: albert.id,
+      title: "First Post",
+      content:
+        "This is my first post. I hope I love writing blogs as much as I love writing them.",
+    });
+    await createPost({
+      authorId: sandra.id,
+      title: "Summer Nights",
+      content:
+        "Does anyone else enjoy ripping paper out of a binder and throwing into the lake on these warm summer nights as much as I do?",
+    });
+    await createPost({
+      authorId: glamgal.id,
+      title: "The Only Post That Matters",
+      content:
+        "Remember, every morning you wake up, you have to choose to be fabulous.",
+    });
+    console.log("Finished creating posts!");
+  } catch (error) {
     throw error;
-}
+  }
 }
 
 async function testDB() {
@@ -131,8 +158,8 @@ async function testDB() {
 
     console.log("Calling updatePost on posts[0]");
     const updatePostResult = await updatePost(posts[0].id, {
-        title: "New Title",
-        content: "Updated Content"
+      title: "New Title",
+      content: "Updated Content",
     });
     console.log("Result:", updatePostResult);
 
@@ -146,7 +173,6 @@ async function testDB() {
     throw error;
   }
 }
-
 
 rebuildDB()
   .then(testDB)

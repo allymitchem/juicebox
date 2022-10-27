@@ -38,11 +38,11 @@ async function updateUser(id, fields = {}) {
   const setString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
-    
+
   if (setString.length === 0) {
     return;
-    
-  } 
+
+  }
   try {
     const {
       rows: [user],
@@ -63,39 +63,50 @@ async function updateUser(id, fields = {}) {
 
 async function createPost({ authorId, title, content }) {
   try {
-    const {
-      rows: [user],
-    } = await client.query(
+    const {rows: [post]} = await client.query(
       `
               INSERT INTO posts("authorId", title, content)
               VALUES ($1, $2, $3)
-              
+
               RETURNING *;
               `,
       [authorId, title, content]
     );
-    return user;
+    return post;
   } catch (error) {
     throw error;
   }
 }
+
+async function createTags(name) {
+  try {
+    const {rows: [tag]} = await client.query(
+      `
+              INSERT INTO tags(name)
+              VALUES ($1), ($2), ($3))
+              ON CONFLICT (name) DO NOTHING;
+
+              RETURNING *;
+              `,
+      [name]
+    );
+    return tag;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function updatePost(id, fields={}) {
   const setString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
-    console.log(   ` UPDATE posts
-    SET ${setString}
-    WHERE id=${id}
-    RETURNING *;
-    `)
+
   if (setString.length === 0) {
     return;
   }
   try {
-    const {
-      rows: [user],
-    } = await client.query(
-     
+    const {rows: [post]} = await client.query(
+
             ` UPDATE posts
             SET ${setString}
             WHERE id=${id}
@@ -103,7 +114,7 @@ async function updatePost(id, fields={}) {
             `,
       Object.values(fields)
     );
-    return user;
+    return post;
   } catch (error) {
     throw error;
   }
@@ -137,12 +148,16 @@ async function getPostsByUser(userId) {
 
 async function getUserById(userId) {
   try {
-    const { rows } = await client.query(`
+    const { rows: [user] } = await client.query(`
         SELECT * FROM users
         WHERE "id"=${userId};
-        
+
         `);
-    return rows;
+        if (!user){
+          return null
+        }
+        user.posts = await getPostsByUser(userId);
+    return user;
   } catch (error) {
     throw error;
   }
