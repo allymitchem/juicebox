@@ -1,9 +1,10 @@
-const { client, getAllUsers, createUser, updateUser } = require("./index");
+const { client, getAllUsers, createUser, updateUser, createPost, updatePost, getAllPosts, getPostsByUser, getUserById } = require("./index");
 
 async function dropTables() {
   try {
     console.log("Starting to drop tables...");
     await client.query(`
+    DROP TABLE IF EXISTS posts;
         DROP TABLE IF EXISTS users;
          `);
     console.log("Finished dropping tables!");
@@ -24,6 +25,14 @@ async function createTables() {
             location VARCHAR(255) NOT NULL,
             active BOOLEAN DEFAULT true
             );
+
+            CREATE TABLE posts(
+                id SERIAL PRIMARY KEY,
+                "authorId" INTEGER REFERENCES users(id) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                content TEXT NOT NULL,
+                active BOOLEAN DEFAULT true
+            );
          `);
     console.log("Finished building tables!");
   } catch (error) {
@@ -37,7 +46,8 @@ async function rebuildDB() {
     client.connect();
     await dropTables();
     await createTables();
-    await createInitialUsers();
+    await createInitialUsers()
+    await createInitialPosts();
   } catch (error) {
     throw error;
   }
@@ -74,6 +84,32 @@ async function createInitialUsers() {
   }
 }
 
+
+async function createInitialPosts(){
+    try {
+        const [albert, sandra, glamgal] = await getAllUsers();
+
+        await createPost({
+            authorId: albert.id,
+            title: "First Post",
+            content: "This is my first post. I hope I love writing blogs as much as I love writing them."
+        });
+        await createPost({
+            authorId: sandra.id,
+            title: "Summer Nights",
+            content: "Does anyone else enjoy ripping paper out of a binder and throwing into the lake on these warm summer nights as much as I do?"
+        });
+        await createPost({
+            authorId: glamgal.id,
+            title: "The Only Post That Matters",
+            content: "Remember, every morning you wake up, you have to choose to be fabulous."
+        });
+    
+}catch(error){
+    throw error;
+}
+}
+
 async function testDB() {
   try {
     console.log("Starting to test database...");
@@ -89,12 +125,28 @@ async function testDB() {
     });
     console.log("Result:", updateUserResult);
 
+    console.log("Calling getAllPosts");
+    const posts = await getAllPosts();
+    console.log("Result:", posts);
+
+    console.log("Calling updatePost on posts[0]");
+    const updatePostResult = await updatePost(posts[0].id, {
+        title: "New Title",
+        content: "Updated Content"
+    });
+    console.log("Result:", updatePostResult);
+
+    console.log("Calling getUserById with 1");
+    const albert = await getUserById(1);
+    console.log("Result:", albert);
+
     console.log("Finished database tests!");
   } catch (error) {
-    console.error("Error testing database!");
+    console.error("Error during testDB!");
     throw error;
   }
 }
+
 
 rebuildDB()
   .then(testDB)
