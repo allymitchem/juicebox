@@ -108,19 +108,31 @@ return;
   }
 }
 
-// async function getAllTags() {
-//   try {
-//     const { rows } = await client.query(
-//       `SELECT * FROM tags
-//     WHERE name
-//     IN ($1, $2, $3);
-//     `
-//     );
-//     return rows;
-//   } catch (error) {
-//     throw error;
-//   }
-// }
+async function createPostTag(postId, tagId){
+    try {
+        await client.query(`
+        INSERT INTO post_tags("postId", "tagId")
+        VALUES ($1, $2)
+        ON CONFLICT ("postId", "tagId") DO NOTHING;
+        `, [postId, tagId]);
+    } catch (error){
+        throw error;
+    }
+}
+
+async function addTagsToPost(postId, tagList){
+    try {
+        const createPostTagPromises = tagList.map(
+           tag => createPostTag(postId, tag.id) 
+        );
+        await Promise.all(createPostTagPromises);
+
+        return await getPostById(postId);
+    } catch (error) {
+        throw error;
+    }
+}
+
 
 async function updatePost(id, fields={}) {
   const setString = Object.keys(fields)
@@ -200,4 +212,5 @@ module.exports = {
   getPostsByUser,
   getUserById,
   createTags,
+  createPostTag,
 };
