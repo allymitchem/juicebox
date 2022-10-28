@@ -9,6 +9,9 @@ const {
   getPostsByUser,
   getUserById,
   createPostTag,
+  addTagsToPost,
+  getPostById,
+  createTags,
 } = require("./index");
 
 async function dropTables() {
@@ -55,8 +58,9 @@ async function createTables() {
             );
 
             CREATE TABLE post_tags(
-                "postId" INTEGER REFERENCES posts(id) UNIQUE NOT NULL,
-                "tagId" INTEGER REFERENCES tags(id) UNIQUE NOT NULL
+                "postId" INTEGER REFERENCES posts(id) NOT NULL,
+                "tagId" INTEGER REFERENCES tags(id) NOT NULL,
+                UNIQUE ("postId" ,"tagId")
                 );
          `);
     console.log("Finished building tables!");
@@ -73,6 +77,7 @@ async function rebuildDB() {
     await createTables();
     await createInitialUsers();
     await createInitialPosts();
+    await createInitialTags();
   } catch (error) {
     console.log("Error during rebuildDB");
     throw error;
@@ -136,6 +141,30 @@ async function createInitialPosts() {
   } catch (error) {
     throw error;
   }
+}
+
+async function createInitialTags(){
+    try  {
+        console.log("Starting to create tags...");
+
+        const [happy, sad, inspo, catman] = await createTags([
+            '#happy',
+            '#worst-day-ever',
+            '#youcandoanything',
+            '#catmandoeverything'
+        ]);
+            
+        const [postOne, postTwo, postThree] = await getAllPosts();
+
+        await addTagsToPost(postOne.id, [happy, inspo]);
+        await addTagsToPost(postTwo.id, [sad, inspo]);
+        await addTagsToPost(postThree.id, [happy, catman, inspo]);
+
+        console.log("Finish creating tags!");
+    } catch (error) {
+         console.log("Error creating tags!");
+         throw error;
+    }
 }
 
 async function testDB() {
