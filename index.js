@@ -12,15 +12,15 @@ server.use(morgan('dev'));
 
 server.use(express.json());
 
-server.use('/api', apiRouter);
-
-
 server.use((req, res, next)=>{
   console.log("<___Body Logger START____>");
   console.log(req.method);
   console.log("____Body Logger END____>");
   next();
 })
+
+server.use('/api', apiRouter);
+
 
 
 
