@@ -8,12 +8,12 @@ const { JWT_SECRET } = process.env;
 apiRouter.use(async (req, res, next) =>{
     const prefix = 'Bearer ';
     const auth = req.header('Authorization');
-    
+
     if (!auth){
         next();
     } else if (auth.startsWith(prefix)){
         const token=auth.slice(prefix.length);
-        
+
         try {
             console.log("about to do the JWT thing")
             const{id}=jwt.verify(token, JWT_SECRET);
@@ -21,7 +21,7 @@ apiRouter.use(async (req, res, next) =>{
                 req.user =await getUserById(id);
                 next();
             }
-            
+
         }catch ({name, message}){
             next({name, message});
         }
@@ -32,6 +32,7 @@ apiRouter.use(async (req, res, next) =>{
         });
     }
 })
+//note
 apiRouter.use((req, res, next)=> {
     console.log('marscapone')
     if (req.user){
