@@ -297,9 +297,9 @@ async function getUserById(userId) {
 }
 
 async function getPostsByTagName(tagName) {
-  console.log(tagName, "get posts by tagName")
+  
   try {
-    const { rows } = await client.query(
+    const { rows: postIds } = await client.query(
       `SELECT posts.id
       FROM posts
       JOIN post_tags ON posts.id=post_tags."postId"
@@ -307,9 +307,8 @@ async function getPostsByTagName(tagName) {
       WHERE tags.name=$1;
     `,[tagName]
     );
-console.log(rows)
-    return "Party in the USA"
-    //await Promise.all(postIds.map((post) => getPostById(post.id)));
+
+    return await Promise.all(postIds.map((post) => getPostById(post.id)));
   } catch (error) {
     throw error;
   }
