@@ -9,7 +9,8 @@ client.connect();
 
 const morgan = require('morgan');
 server.use(morgan('dev'));
-
+const cors = require("cors");
+server.use(cors());
 server.use(express.json());
 
 server.use((req, res, next)=>{

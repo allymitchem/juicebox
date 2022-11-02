@@ -21,7 +21,7 @@ let {tagName}= req.params;
 try{
 const allPosts = await getPostsByTagName(tagName);
 const posts = allPosts.filter(post => {
-  return post.active || (req.user && post.author.id === req.user.id)
+  return post.active || (req.user && post.author.id === req.user.id ) || post.author.active
 })
 
 
