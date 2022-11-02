@@ -67,7 +67,7 @@ async function getUserByUsername(username){
     FROM users
     WHERE username=$1;
     `, [username]);
-    
+
     return user;
   } catch (error){
     throw error;
@@ -239,7 +239,7 @@ async function updatePost(postId, fields = {}) {
 
 async function getAllTags(){
   const {rows: tags}= await client.query(`
-  SELECT * 
+  SELECT *
   FROM tags;
   `)
   return tags;
@@ -297,19 +297,19 @@ async function getUserById(userId) {
 }
 
 async function getPostsByTagName(tagName) {
+  console.log(tagName, "get posts by tagName")
   try {
-    const { rows: postIds } = await client.query(
-      `
-    SELECT posts.id
-    FROM posts
-    JOIN post_tags ON posts.id=post_tags."postId"
-    JOIN tags ON tags.id=post_tags."tagId"
-    WHERE tags.name=$1;
-    `,
-      [tagName]
+    const { rows } = await client.query(
+      `SELECT posts.id
+      FROM posts
+      JOIN post_tags ON posts.id=post_tags."postId"
+      JOIN tags ON tags.id=post_tags."tagId"
+      WHERE tags.name=$1;
+    `,[tagName]
     );
-
-    return await Promise.all(postIds.map((post) => getPostById(post.id)));
+console.log(rows)
+    return "Party in the USA"
+    //await Promise.all(postIds.map((post) => getPostById(post.id)));
   } catch (error) {
     throw error;
   }

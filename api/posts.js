@@ -10,7 +10,7 @@ postsRouter.post('/', requireUser, async (req, res, next) => {
 
 
   const postData = {authorId: req.user.id, title, content};
-  console.log(postData, 'BIG FAT NOTE')
+
 
   if (tagArr.length){
     postData.tags = tagArr;

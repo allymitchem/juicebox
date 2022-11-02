@@ -132,7 +132,7 @@ async function createInitialPosts() {
       title: "Summer Nights",
       content:
         "Does anyone else enjoy ripping paper out of a binder and throwing into the lake on these warm summer nights as much as I do?",
-      tags: ["#HavingMeBlast", "#GoodGirl"]
+      tags: ["#HavingMeBlast", "#goodgirl"]
     });
     await createPost({
       authorId: glamgal.id,
