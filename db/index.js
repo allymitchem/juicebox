@@ -1,6 +1,6 @@
 const { Client } = require("pg");
 
-const client = new Client("postgres://localhost:5432/juicebox-dev");
+const client = new Client(process.env.DATABASE_URL ||"postgres://localhost:5432/juicebox-dev");
 
 async function getAllUsers() {
   try {
@@ -304,7 +304,7 @@ async function getUserById(userId) {
 }
 
 async function getPostsByTagName(tagName) {
-  
+
   try {
     const { rows: postIds } = await client.query(
       `SELECT posts.id
